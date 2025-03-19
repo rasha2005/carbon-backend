@@ -4,5 +4,5 @@ const carbon_route = express();
 
 carbon_route.post('/calculate' , carbonController.calculate_carbon);
 
-carbon_route.post('/claude' , carbonController.FetchAPI);
+carbon_route.post('/gemini' , carbonController.gemini);
 module.exports = carbon_route;

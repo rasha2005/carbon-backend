@@ -1,5 +1,6 @@
 const CarbonRecord = require("../model/carbonModel");
 const axios = require("axios");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const calculate_carbon = async(req,res) => {
     try{
@@ -43,37 +44,25 @@ const calculate_carbon = async(req,res) => {
     }
 }
 
-const FetchAPI = async(req,res) => {
-    try {
+const gemini = async(req,res) => {
+    try{
+        console.log("hehe");
         const { distance, transportType } = req.body;
-        console.log("process.env.ANTHROPIC_API_KEY",)
-        const response = await axios.post("https://api.anthropic.com/v1/messages", {
-            model: "claude-3-opus-20240229",
-            messages: [
-                {
-                    role: "user",
-                    content: `I traveled ${distance} km using a ${transportType}. Give me a suggestion to reduce my carbon footprint.`
-                }
-            ],
-            max_tokens: 100
-        }, {
-            headers: {
-                "x-api-key": process.env.ANTHROPIC_API_KEY, 
-                "Content-Type": "application/json",
-                "anthropic-version": "2023-06-01"
-            }
-        });
 
-        res.json(response.data);
-        // console.log("res" , response.data)
-    } catch (error) {
-        console.error("Error calling Claude API:", error.response?.data || error.message);
-        res.status(500).json({ error: "Failed to fetch AI response" });
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        const prompt = `I traveled ${distance} km using a ${transportType}. Give me a suggestion to reduce my carbon footprint.keep it short but clear ,can have minimum of 2 points`;
+        
+        const result = await model.generateContent(prompt);
+        console.log("return",result.response.text());
+        res.json({result:result.response.text()})
+    }catch(err){
+        console.log(err);
     }
-
 }
 
 module.exports = {
     calculate_carbon,
-    FetchAPI
+    gemini
 }
